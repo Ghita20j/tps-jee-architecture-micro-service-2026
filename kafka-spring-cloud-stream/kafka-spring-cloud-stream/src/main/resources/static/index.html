@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Analytics temps réel - Kafka Streams</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/smoothie/1.36.1/smoothie.min.js"></script>
+    <style>
+        body { font-family: system-ui, sans-serif; margin: 2rem; background: #f6f7f9; color: #222; }
+        h1 { font-size: 1.4rem; }
+        canvas { background: #111; border-radius: 8px; }
+        .legend span { display: inline-block; margin-right: 1.5rem; font-weight: 600; }
+        .stats { margin-top: 1rem; }
+        .stats div { margin: .3rem 0; }
+    </style>
+</head>
+<body>
+<h1>Nombre de visites par page (fenêtre de 5 s)</h1>
+<canvas id="chart" width="900" height="350"></canvas>
+<div class="legend" id="legend"></div>
+<div class="stats" id="stats"></div>
+
+<script>
+    const pages = ["P1", "P2"];
+    const colors = ["#4fc3f7", "#ffb74d"];
+    const chart = new SmoothieChart({ tooltip: true, minValue: 0 });
+    chart.streamTo(document.getElementById("chart"), 1000);
+
+    const series = {};
+    pages.forEach((p, i) => {
+        series[p] = new TimeSeries();
+        chart.addTimeSeries(series[p], { strokeStyle: colors[i], lineWidth: 3 });
+        document.getElementById("legend").innerHTML +=
+            `<span style="color:${colors[i]}">■ ${p}</span>`;
+    });
+
+    const source = new EventSource("/analytics");
+    source.addEventListener("message", (e) => {
+        const data = JSON.parse(e.data);
+        const now = Date.now();
+        let html = "";
+        pages.forEach(p => {
+            const v = data[p] || 0;
+            series[p].append(now, v);
+            html += `<div>${p} : <b>${v}</b></div>`;
+        });
+        document.getElementById("stats").innerHTML = html;
+    });
+</script>
+</body>
+</html>

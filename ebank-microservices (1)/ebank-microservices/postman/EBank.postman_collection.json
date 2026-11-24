@@ -1,0 +1,71 @@
+{
+  "info": {
+    "name": "EBank Micro-services",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "gateway", "value": "http://localhost:8888" },
+    { "key": "agent", "value": "http://localhost:8070" },
+    { "key": "accountId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Customers",
+      "item": [
+        { "name": "All customers (direct)", "request": { "method": "GET", "url": "http://localhost:8081/api/customers" } },
+        { "name": "All customers (gateway)", "request": { "method": "GET", "url": "{{gateway}}/api/customers" } },
+        { "name": "Customer by id", "request": { "method": "GET", "url": "{{gateway}}/api/customers/1" } },
+        { "name": "Search customers", "request": { "method": "GET", "url": "{{gateway}}/api/customers/search?keyword=ima" } },
+        {
+          "name": "Create customer",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\"firstName\":\"Hamza\",\"lastName\":\"Berrada\",\"email\":\"hamza@gmail.com\"}" },
+            "url": "{{gateway}}/api/customers"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Accounts",
+      "item": [
+        { "name": "All accounts (direct)", "request": { "method": "GET", "url": "http://localhost:8082/api/accounts" } },
+        { "name": "All accounts (gateway)", "request": { "method": "GET", "url": "{{gateway}}/api/accounts" } },
+        { "name": "All accounts (dynamic routing)", "request": { "method": "GET", "url": "{{gateway}}/account-service/api/accounts" } },
+        { "name": "Account by id", "request": { "method": "GET", "url": "{{gateway}}/api/accounts/{{accountId}}" } },
+        { "name": "Accounts of customer 1", "request": { "method": "GET", "url": "{{gateway}}/api/accounts/customer/1" } },
+        {
+          "name": "Create account",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\"customerId\":1,\"initialBalance\":5000,\"currency\":\"MAD\",\"type\":\"SAVING_ACCOUNT\"}" },
+            "url": "{{gateway}}/api/accounts"
+          }
+        },
+        { "name": "Deposit", "request": { "method": "POST", "url": "{{gateway}}/api/accounts/{{accountId}}/deposit?amount=1000" } },
+        { "name": "Withdraw", "request": { "method": "POST", "url": "{{gateway}}/api/accounts/{{accountId}}/withdraw?amount=500" } },
+        { "name": "Circuit breakers state", "request": { "method": "GET", "url": "http://localhost:8082/actuator/circuitbreakers" } }
+      ]
+    },
+    {
+      "name": "AI Agent",
+      "item": [
+        { "name": "Tools MCP", "request": { "method": "GET", "url": "{{agent}}/tools" } },
+        { "name": "Chat - clients", "request": { "method": "GET", "url": "{{agent}}/chat?query=Donne moi la liste des clients" } },
+        { "name": "Chat - comptes Imane", "request": { "method": "GET", "url": "{{agent}}/chat?query=Quels sont les comptes de Imane ?" } },
+        { "name": "Chat - memoire", "request": { "method": "GET", "url": "{{agent}}/chat?query=Quel est le solde total de ses comptes ?" } },
+        {
+          "name": "Chat POST",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\"conversationId\":\"user1\",\"message\":\"Liste les comptes du client 2\"}" },
+            "url": "{{agent}}/api/chat"
+          }
+        }
+      ]
+    }
+  ]
+}
